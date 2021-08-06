@@ -14,8 +14,8 @@ def sampling(data, num_samples, threshold):
     posterior_distribution = []
     n = len(data)
     for i in range(0, num_samples):
-        distance = threshold+1
-        while distance > threshold:
+        distance = threshold
+        while distance >= threshold:
             variable = np.random.beta(1, 1, size=1)[0]
             simulated = np.random.normal(0, variable, n)
             distance = find_distance(simulated, data)
