@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 # create observed data
 mu, sigma = 0, 0.1  # mean and standard deviation
-observed = np.random.normal(mu, sigma, 50)
+observed = np.random.normal(mu, sigma, 40)
 
 
 def find_distance(observed, simulated):
