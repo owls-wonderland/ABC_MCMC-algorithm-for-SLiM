@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 # create observed data
 mu, sigma = 0, 0.1  # mean and standard deviation
-observed = np.random.normal(mu, sigma, 1000)
+observed = np.random.normal(mu, sigma, 50)
 
 
 def find_distance(observed, simulated):
@@ -63,8 +63,8 @@ def sampling(data, num_samples):
     return posterior_distribution_mean, posterior_distribution_sd
 
 
-posterior_mean = sampling(observed, 100)[0]
-posterior_sd = sampling(observed, 100)[1]
+posterior_mean = sampling(observed, 30)[0]
+posterior_sd = sampling(observed, 30)[1]
 count, bins, ignored = plt.hist(posterior_mean, 400, density=True)
 count, bins, ignored = plt.hist(posterior_sd, 400, density=True)
 plt.show()
