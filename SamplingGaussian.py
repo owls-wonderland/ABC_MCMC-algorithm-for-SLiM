@@ -24,16 +24,18 @@ def sampling(data, num_samples):
     simulated = np.random.normal(variable_mean, variable_sd, n)
     threshold = find_distance(simulated, data)
     # defining standard deviation and mean for sampling s+1 variable from s variable
-    variable_mean_st_dist = 0.1
-    variable_sd_st_dist = 0.1
+    variable_mean_st_dev = 0.1
+    variable_sd_st_dev = 0.1
+    running_mean_of_mean = variable_mean
+    running_mean_of_sd = variable_sd
     # defining target acceptance rate
     target_acceptance_rate = 0.1
     for i in range(0, num_samples):
         distance = threshold
         new_variable_mean = np.random.normal(
-            variable_mean, variable_mean_st_dist, size=1
+            variable_mean, variable_mean_st_dev, size=1
         )[0]
-        new_variable_sd = np.random.normal(variable_sd, variable_sd_st_dist, size=1)[0]
+        new_variable_sd = np.random.normal(variable_sd, variable_sd_st_dev, size=1)[0]
         if new_variable_sd < 0:
             new_variable_sd = -new_variable_sd
         simulated = np.random.normal(new_variable_mean, new_variable_sd, n)
@@ -54,6 +56,19 @@ def sampling(data, num_samples):
             threshold = math.exp(
                 math.log(threshold) + (target_acceptance_rate - 0) / (i + 1)
             )
+        running_mean_of_mean = running_mean_of_mean + (
+            variable_mean - running_mean_of_mean
+        ) / (i + 1)
+        running_mean_of_sd = running_mean_of_sd + (variable_sd - running_mean_of_sd) / (
+            i + 1
+        )
+
+        variable_mean_st_dev = variable_mean_st_dev + (
+            (variable_mean - running_mean_of_mean) ** 2 - variable_mean_st_dev
+        ) / (i + 1)
+        variable_sd_st_dev = variable_sd_st_dev + (
+            (variable_sd - running_mean_of_sd) ** 2 - variable_sd_st_dev
+        ) / (i + 1)
     return posterior_distribution_mean, posterior_distribution_sd
 
 
