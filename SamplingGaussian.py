@@ -40,7 +40,7 @@ def sampling(data, num_samples):
             new_variable_sd = -new_variable_sd
         simulated = np.random.normal(new_variable_mean, new_variable_sd, n)
         distance = find_distance(simulated, data)
-        if distance < threshold:
+        if distance <= threshold:
             # when new variable is accepted
             posterior_distribution_mean.append(new_variable_mean)
             posterior_distribution_sd.append(new_variable_sd)
