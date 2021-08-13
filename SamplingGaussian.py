@@ -8,9 +8,7 @@ observed = np.random.normal(mu, sigma, 100)
 
 
 def find_distance(observed, simulated):
-    distance = (np.power(sum(observed), 2) + np.power(sum(simulated), 2)) * (
-        1 / len(observed)
-    )
+    distance = sum(np.power((observed - simulated), 2)) * (1 / len(observed))
     return distance
 
 
@@ -80,8 +78,8 @@ def sampling(data, num_samples):
     return posterior_distribution_mean, posterior_distribution_sd
 
 
-posterior_mean, posterior_sd = sampling(observed, 500000)
-#posterior_sd = sampling(observed, 1000000)[1]
+posterior_mean, posterior_sd = sampling(observed, 1000000)
+# posterior_sd = sampling(observed, 1000000)[1]
 count, bins, ignored = plt.hist(posterior_mean, 100, density=True)
 count, bins, ignored = plt.hist(posterior_sd, 100, density=True)
 plt.show()
