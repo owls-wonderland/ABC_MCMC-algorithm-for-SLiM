@@ -57,28 +57,31 @@ def sampling(data, num_samples):
             )
 
         # Changing variables standard deviation
-
-        running_mean_of_mean = running_mean_of_mean + (
-            variable_mean - running_mean_of_mean
-        ) / (i + 1)
-        running_mean_of_sd = running_mean_of_sd + (
-            variable_sd - running_mean_of_sd
-        ) / (i + 1)
-        variable_mean_st_dev = math.sqrt(
-            variable_mean_st_dev ** 2
-            + ((variable_mean - running_mean_of_mean) ** 2 - variable_mean_st_dev ** 2)
-            / (i + 1)
-        )
-        variable_sd_st_dev = math.sqrt(
-            variable_sd_st_dev ** 2
-            + ((variable_sd - running_mean_of_sd) ** 2 - variable_sd_st_dev ** 2)
-            / (i + 1)
-        )
+        if i > 1:
+            running_mean_of_mean = running_mean_of_mean + (
+                variable_mean - running_mean_of_mean
+            ) / (i + 1)
+            running_mean_of_sd = running_mean_of_sd + (
+                variable_sd - running_mean_of_sd
+            ) / (i + 1)
+            variable_mean_st_dev = math.sqrt(
+                variable_mean_st_dev ** 2
+                + (
+                    (variable_mean - running_mean_of_mean) ** 2
+                    - variable_mean_st_dev ** 2
+                )
+                / (i + 1)
+            )
+            variable_sd_st_dev = math.sqrt(
+                variable_sd_st_dev ** 2
+                + ((variable_sd - running_mean_of_sd) ** 2 - variable_sd_st_dev ** 2)
+                / (i + 1)
+            )
     return posterior_distribution_mean, posterior_distribution_sd
 
 
-posterior_mean = sampling(observed, 10000)[0]
-posterior_sd = sampling(observed, 10000)[1]
+posterior_mean, posterior_sd = sampling(observed, 500000)
+#posterior_sd = sampling(observed, 1000000)[1]
 count, bins, ignored = plt.hist(posterior_mean, 100, density=True)
 count, bins, ignored = plt.hist(posterior_sd, 100, density=True)
 plt.show()
