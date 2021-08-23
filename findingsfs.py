@@ -223,7 +223,7 @@ given_sfs = np.array(
         - 4.98841237
     ]
 )
-posterior_mean, posterior_shape, posterior_dominance = sampling(given_sfs, 20)
+posterior_dominance, posterior_mean, posterior_shape = sampling(given_sfs, 20)
 count, bins, ignored = plt.hist(posterior_mean, 100, density=True)
 count, bins, ignored = plt.hist(posterior_shape, 100, density=True)
 # count, bins, ignored = plt.hist(posterior_dominance, 100, density=True)
