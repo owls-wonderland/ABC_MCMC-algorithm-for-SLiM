@@ -4,13 +4,14 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import sys
 
 
 def simulating_data(
-    lenght_of_sfs, number_of_sfs, dominance_coefficient, mean, shape_parameter
+    path, lenght_of_sfs, number_of_sfs, dominance_coefficient, mean, shape_parameter
 ):
     """Function simulating_data runs Slim using terminal given number of times and generates .trees files.
-    Extracts sfs from each .trees file. Later averages sfs and log it."""
+    Extracts sfs from each .trees file. Later averages sfs and logs it."""
     samples = list(range(int(lenght_of_sfs)))
     for i in range(number_of_sfs):
         # creating different .trees output files
@@ -23,17 +24,16 @@ def simulating_data(
             + str(mean)
             + " -d shape_parameter="
             + str(shape_parameter)
+            + ' -d "path='
+            + "'"
+            + str(path)
+            + "'\""
             + " background.slim"
         )
 
         # extracting sfs from each .trees file
-        ts = pyslim.load(
-            "/home/jekaterina/Documents/Summer project/background" + str(i) + ".trees"
-        )
-        # deleting used .trees file
-        os.remove(
-            "/home/jekaterina/Documents/Summer project/background" + str(i) + ".trees"
-        )
+        ts = pyslim.load(path + "/background" + str(i) + ".trees")
+        os.remove(path + "/background" + str(i) + ".trees") # deleting used .trees file
         ts = ts.simplify(samples)
         sfs = ts.allele_frequency_spectrum(
             mode="branch", span_normalise=False, polarised=True
@@ -58,12 +58,12 @@ def simulating_data(
 
 
 def find_distance(observed, simulated):
-    """Fuction find_distance calculates square distance between simukated and observed data"""
+    """Function find_distance calculates square distance between simulated and observed data"""
     distance = sum(np.power((observed - simulated), 2)) * (1 / len(observed))
     return distance
 
 
-def sampling(data, num_samples):
+def sampling(path_sam, data, num_samples):
     posterior_distribution_dominance = []
     posterior_distribution_mean = []
     posterior_distribution_shape = []
@@ -75,7 +75,7 @@ def sampling(data, num_samples):
 
     # setting the first threshold
     simulated = simulating_data(
-        30, 10, variable_dominance, variable_mean, variable_shape
+        path_sam, 30, 10, variable_dominance, variable_mean, variable_shape
     )
     print("very first one simulated")
     threshold = find_distance(data, simulated)
@@ -112,7 +112,12 @@ def sampling(data, num_samples):
 
         # finding simulated data & distance
         simulated = simulating_data(
-            30, 10, new_variable_dominance, new_variable_mean, new_variable_shape
+            path_sam,
+            30,
+            10,
+            new_variable_dominance,
+            new_variable_mean,
+            new_variable_shape,
         )
         print(i)
         print(
@@ -187,8 +192,6 @@ def sampling(data, num_samples):
 """
 # This code was used to create given_sfs array
 sfs = simulating_data(30, 20, 0.5, -0.01, 0.1)
-file_with_sfs = open("/home/jekaterina/Documents/Summer project/observed.txt", "a")
-sfs_txt = file_with_sfs.read()
 """
 given_sfs = np.array(
     [
@@ -223,8 +226,22 @@ given_sfs = np.array(
         - 4.98841237
     ]
 )
-posterior_dominance, posterior_mean, posterior_shape = sampling(given_sfs, 20)
-count, bins, ignored = plt.hist(posterior_mean, 100, density=True)
-count, bins, ignored = plt.hist(posterior_shape, 100, density=True)
-# count, bins, ignored = plt.hist(posterior_dominance, 100, density=True)
-plt.show()
+
+
+def main():
+    args = [arg for arg in sys.argv[1:] if not arg.startswith("-")]
+    current_path = "/".join(arg for arg in args)
+    posterior_dominance, posterior_mean, posterior_shape = sampling(
+        current_path, given_sfs, 1
+    )
+    count, bins, ignored = plt.hist(posterior_mean, 100, density=True)
+    count, bins, ignored = plt.hist(posterior_shape, 100, density=True)
+    # count, bins, ignored = plt.hist(posterior_dominance, 100, density=True)
+    plt.title("Parameters frequency")
+    plt.xlabel("value")
+    plt.ylabel("frequency")
+    plt.savefig("mcmc_parameters.png")
+
+
+if __name__ == "__main__":
+    main()
