@@ -231,7 +231,7 @@ def main():
     args = [arg for arg in sys.argv[1:] if not arg.startswith("-")]
     current_path = "/".join(arg for arg in args)
     posterior_dominance, posterior_mean, posterior_shape = sampling(
-        current_path, given_sfs, 500
+        current_path, given_sfs, 10000
     )
     count, bins, ignored = plt.hist(posterior_mean, 100, density=True)
     count, bins, ignored = plt.hist(posterior_shape, 100, density=True)

@@ -1,8 +1,8 @@
 initialize() {
 	setSeed(seed); 
 	defineConstant("K", 1000);
-	initializeTreeSeq(); 
-	initializeMutationRate(1e-7);
+	initializeTreeSeq(checkCoalescence=T); 
+	initializeMutationRate(1e-8);
 
 	initializeMutationType("m1", dominance_coefficient, "g", mean, shape_parameter);  // deleterious
 
@@ -16,9 +16,16 @@ initialize() {
 }
 
 // An initial subpop is set up as before.
-1 early() {
+1 {
 	sim.addSubpop("p1", K);
 	defineConstant("simID", getSeed()); 
+}
+1: late() {
+	if (sim.treeSeqCoalesced())
+ 	{
+ 	sim.treeSeqOutput(path + "/background" + simID + ".trees");
+ 	sim.simulationFinished();
+ 	} 
 }
 
 10000 late() {
