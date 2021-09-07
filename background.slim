@@ -4,16 +4,15 @@ initialize() {
 	initializeTreeSeq(); 
 	initializeMutationRate(1e-7);
 
-	initializeMutationType("m1", 0.5, "f", 0.0);         // neutral
-	initializeMutationType("m2", dominance_coefficient, "g", mean, shape_parameter);  // deleterious
+	initializeMutationType("m1", dominance_coefficient, "g", mean, shape_parameter);  // deleterious
 
-	// The genomic element type here utilizes a mix of m1, m2
-	initializeGenomicElementType("g1", c(m1,m2), c(1.0,0.1));
+	// The genomic element type here utilizes a mix of m1
+	initializeGenomicElementType("g1", m1, 0.1);
 	initializeGenomicElement(g1, 0, 1e6 - 1);
 	initializeRecombinationRate(1e-8);
 
 	// We set up custom colors for display of m2
-	m2.color = "red";
+	m1.color = "red";
 }
 
 // An initial subpop is set up as before.

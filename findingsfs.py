@@ -193,46 +193,45 @@ def sampling(path_sam, data, num_samples):
 # This code was used to create given_sfs array
 sfs = simulating_data(30, 20, 0.5, -0.01, 0.1)
 """
-given_sfs = np.array(
-    [
-        -0.97521618
-        - 1.87011656
-        - 2.24700429
-        - 2.65951118
-        - 3.05000166
-        - 3.07489556
-        - 3.04522172
-        - 3.47843442
-        - 3.69398409
-        - 4.06276335
-        - 3.85851225
-        - 4.29132519
-        - 4.07425373
-        - 4.09466838
-        - 4.16694236
-        - 4.25458452
-        - 4.24621578
-        - 4.51276235
-        - 4.36592735
-        - 4.62343833
-        - 4.57562728
-        - 4.64440639
-        - 4.41582723
-        - 4.57696382
-        - 4.9021774
-        - 4.92645268
-        - 4.44071992
-        - 4.94018856
-        - 4.98841237
-    ]
-)
-
 
 def main():
+    given_sfs = np.array(
+        [
+            -0.97521618
+            - 1.87011656
+            - 2.24700429
+            - 2.65951118
+            - 3.05000166
+            - 3.07489556
+            - 3.04522172
+            - 3.47843442
+            - 3.69398409
+            - 4.06276335
+            - 3.85851225
+            - 4.29132519
+            - 4.07425373
+            - 4.09466838
+            - 4.16694236
+            - 4.25458452
+            - 4.24621578
+            - 4.51276235
+            - 4.36592735
+            - 4.62343833
+            - 4.57562728
+            - 4.64440639
+            - 4.41582723
+            - 4.57696382
+            - 4.9021774
+            - 4.92645268
+            - 4.44071992
+            - 4.94018856
+            - 4.98841237
+        ]
+    )
     args = [arg for arg in sys.argv[1:] if not arg.startswith("-")]
     current_path = "/".join(arg for arg in args)
     posterior_dominance, posterior_mean, posterior_shape = sampling(
-        current_path, given_sfs, 10000
+        current_path, given_sfs, 500
     )
     count, bins, ignored = plt.hist(posterior_mean, 100, density=True)
     count, bins, ignored = plt.hist(posterior_shape, 100, density=True)

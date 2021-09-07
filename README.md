@@ -1,6 +1,43 @@
 # cod-model
 
+## Before executing the script, SLiM needs to be installed
 
+Installation of SLiM on Ubuntu is described in [SLiM manual](http://benhaller.com/slim/SLiM_Manual.pdf) in section 2.2
+
+There are 2 methods for that:
+
+#### 1. Using installation script
+
+There is an installation script created by Bryce Carson. The script is hosted in the [SLiM-Extras](https://raw.githubusercontent.com/MesserLab/SLiM-Extras/master/installation/DebianUbuntuInstall.sh) repository on GitHub. Note
+that it requires cmake, qmake, Qt, and either curl or wget to be installed on your system first; if they
+are not, it will print instructions on how to install them. Follow those instructions to install the
+needed packages, and then try running the install script again. 
+Note that because this script installs the built components into /usr/bin, the sudo command is
+used to run the script with root privileges, so you will need to enter your system’s root password. 
+
+If you have wget installed (which appears to be present by default on Ubuntu), you can run the
+install script directly from the web with the following single command line (which should be
+entered as a single line in Terminal):
+
+'''
+wget --output-document /dev/stdout - --quiet https://
+raw.githubusercontent.com/MesserLab/SLiM-Extras/master/installation/
+DebianUbuntuInstall.sh | sudo bash -s
+'''
+
+or if you have curl installed and prefer to use it, you can execute this single command line to
+install directly from the web:
+'''
+curl --silent https://raw.githubusercontent.com/MesserLab/SLiM-Extras/
+master/installation/DebianUbuntuInstall.sh | sudo bash -s
+'''
+
+These two options should be identical for all practical purposes. They download the install
+script from its URL and pipe it directly into bash to be executed. 
+
+#### 2.Building SLiM from sources on Linux 
+
+Refer to section 2.2.2 in [SLiM manual](http://benhaller.com/slim/SLiM_Manual.pdf)
 
 ## Installing pyenv(in case it is not installed)
 
@@ -36,7 +73,15 @@ Navigate to the directory, where files are saved. Once in that directory, give p
 
 Then all that have to be done is to run bash file:
 
-`./run_msms.sh`
+`./run_mcmc.sh`
 
 Bash file should take care of everything. It will create virtual environment and download all requared pachaged for python code to run.
 Bash file also gives directory's path such that all future files would be creted in the same directory.
+
+Note thar after the first usage of bash file the virtual environment has been created and all requiared packaged has been installe. Therefore, to avoid repeated installation lines 2 & 6 can be commented out:
+
+'2 #pyenv virtualenv 3.8.2 mcmc-slim'
+
+'6 #pip install -r requirements.txt'
+
+
