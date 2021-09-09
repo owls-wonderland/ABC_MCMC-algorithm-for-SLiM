@@ -3,3 +3,4 @@ tskit
 pyslim
 numpy
 matplotlib
+pandas

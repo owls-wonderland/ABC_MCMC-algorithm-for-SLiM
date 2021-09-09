@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import sys
+import pandas as pd
 
 
 def simulating_data(
@@ -12,49 +13,54 @@ def simulating_data(
 ):
     """Function simulating_data runs Slim using terminal given number of times and generates .trees files.
     Extracts sfs from each .trees file. Later averages sfs and logs it."""
-    samples = list(range(int(lenght_of_sfs)))
-    for i in range(number_of_sfs):
-        # creating different .trees output files
-        os.system(
-            "slim -d seed="
-            + str(i)
-            + " -d dominance_coefficient="
-            + str(dominance_coefficient)
-            + " -d mean="
-            + str(mean)
-            + " -d shape_parameter="
-            + str(shape_parameter)
-            + ' -d "path='
-            + "'"
-            + str(path)
-            + "'\""
-            + " background.slim"
-        )
+    try:
+        samples = list(range(int(lenght_of_sfs)))
+        for i in range(number_of_sfs):
+            # creating different .trees output files
+            os.system(
+                "slim -d seed="
+                + str(i)
+                + " -d dominance_coefficient="
+                + str(dominance_coefficient)
+                + " -d mean="
+                + str(mean)
+                + " -d shape_parameter="
+                + str(shape_parameter)
+                + ' -d "path='
+                + "'"
+                + str(path)
+                + "'\""
+                + " background.slim"
+            )
 
-        # extracting sfs from each .trees file
-        ts = pyslim.load(path + "/background" + str(i) + ".trees")
-        os.remove(path + "/background" + str(i) + ".trees") # deleting used .trees file
-        ts = ts.simplify(samples)
-        sfs = ts.allele_frequency_spectrum(
-            mode="branch", span_normalise=False, polarised=True
-        )
-        np.set_printoptions(threshold=np.inf)
+            # extracting sfs from each .trees file
+            ts = pyslim.load(path + "/background" + str(i) + ".trees")
+            os.remove(
+                path + "/background" + str(i) + ".trees"
+            )  # deleting used .trees file
+            ts = ts.simplify(samples)
+            sfs = ts.allele_frequency_spectrum(
+                mode="branch", span_normalise=False, polarised=True
+            )
+            np.set_printoptions(threshold=np.inf)
 
-        # Normalising SFS
-        sumsfs = np.sum(sfs)
-        sfs_norm = sfs / sumsfs
-        if i == 0:
-            all_sfs = sfs_norm
-        else:
-            all_sfs = all_sfs + sfs_norm
+            # Normalising SFS
+            sumsfs = np.sum(sfs)
+            sfs_norm = sfs / sumsfs
+            if i == 0:
+                all_sfs = sfs_norm
+            else:
+                all_sfs = all_sfs + sfs_norm
 
-    # average sfs
-    modified_sfs = np.delete(all_sfs, [0, len(all_sfs) - 1])
-    modified_sfs = modified_sfs / number_of_sfs
+        # average sfs
+        modified_sfs = np.delete(all_sfs, [0, len(all_sfs) - 1])
+        modified_sfs = modified_sfs / number_of_sfs
 
-    # Log
-    log_sfs = np.log(modified_sfs) - np.log(1 - modified_sfs)
-    return log_sfs
+        # Log
+        log_sfs = np.log(modified_sfs) - np.log(1 - modified_sfs)
+        return log_sfs, True
+    except FileNotFoundError:
+        return np.zeros(lenght_of_sfs - 2), False
 
 
 def find_distance(observed, simulated):
@@ -74,12 +80,20 @@ def sampling(path_sam, data, num_samples):
     variable_shape = 0.3
 
     # setting the first threshold
-    simulated = simulating_data(
+    simulated, successful = simulating_data(
         path_sam, 30, 10, variable_dominance, variable_mean, variable_shape
     )
-    print("very first one simulated")
     threshold = find_distance(data, simulated)
-
+    dt = pd.DataFrame(
+        [[variable_dominance, variable_mean, variable_shape, simulated, True]],
+        columns=[
+            "variable_dominance",
+            "variable_mean",
+            "variable_shape",
+            "log sfs",
+            "accepted",
+        ],
+    )
     # defining standard deviation and mean for sampling s+1 variable from s variable
     variable_dominance_st_dev = 0.1
     variable_mean_st_dev = 0.1
@@ -111,7 +125,7 @@ def sampling(path_sam, data, num_samples):
             new_variable_shape = -new_variable_shape
 
         # finding simulated data & distance
-        simulated = simulating_data(
+        simulated, successful = simulating_data(
             path_sam,
             30,
             10,
@@ -126,7 +140,27 @@ def sampling(path_sam, data, num_samples):
         distance = find_distance(data, simulated)
 
         # accepting or rejecting new parameters
-        if distance <= threshold:
+        if (distance <= threshold) & (successful == True):
+            # saving data
+            temp_dt = pd.DataFrame(
+                [
+                    [
+                        new_variable_dominance,
+                        new_variable_mean,
+                        new_variable_shape,
+                        simulated,
+                        True,
+                    ]
+                ],
+                columns=[
+                    "variable_dominance",
+                    "variable_mean",
+                    "variable_shape",
+                    "log sfs",
+                    "accepted",
+                ],
+            )
+            dt = dt.append(temp_dt, ignore_index=True)
             # when new variable is accepted
             posterior_distribution_mean.append(new_variable_mean)
             posterior_distribution_shape.append(new_variable_shape)
@@ -138,6 +172,26 @@ def sampling(path_sam, data, num_samples):
                 math.log(threshold) + (target_acceptance_rate - 1) / (i + 1)
             )
         else:
+            # saving data
+            temp_dt = pd.DataFrame(
+                [
+                    [
+                        new_variable_dominance,
+                        new_variable_mean,
+                        new_variable_shape,
+                        simulated,
+                        False,
+                    ]
+                ],
+                columns=[
+                    "variable_dominance",
+                    "variable_mean",
+                    "variable_shape",
+                    "log sfs",
+                    "accepted",
+                ],
+            )
+            dt = dt.append(temp_dt, ignore_index=True)
             # when variable is rejected
             posterior_distribution_mean.append(variable_mean)
             posterior_distribution_shape.append(variable_shape)
@@ -186,6 +240,7 @@ def sampling(path_sam, data, num_samples):
         posterior_distribution_dominance,
         posterior_distribution_mean,
         posterior_distribution_shape,
+        dt,
     )
 
 
@@ -193,6 +248,7 @@ def sampling(path_sam, data, num_samples):
 # This code was used to create given_sfs array
 sfs = simulating_data(30, 20, 0.5, -0.01, 0.1)
 """
+
 
 def main():
     given_sfs = np.array(
@@ -230,7 +286,7 @@ def main():
     )
     args = [arg for arg in sys.argv[1:] if not arg.startswith("-")]
     current_path = "/".join(arg for arg in args)
-    posterior_dominance, posterior_mean, posterior_shape = sampling(
+    posterior_dominance, posterior_mean, posterior_shape, data_about_simulations = sampling(
         current_path, given_sfs, 10000
     )
     count, bins, ignored = plt.hist(posterior_mean, 100, density=True)
@@ -240,6 +296,7 @@ def main():
     plt.xlabel("value")
     plt.ylabel("frequency")
     plt.savefig("mcmc_parameters.png")
+    pd.DataFrame(data_about_simulations).to_csv("All_used_data.csv")
 
 
 if __name__ == "__main__":
