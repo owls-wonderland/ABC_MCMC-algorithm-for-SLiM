@@ -60,7 +60,7 @@ def simulating_data(
         log_sfs = np.log(modified_sfs) - np.log(1 - modified_sfs)
         return log_sfs, True
     except FileNotFoundError:
-        return np.zeros(lenght_of_sfs - 2), False
+        return np.zeros(lenght_of_sfs - 1), False
 
 
 def find_distance(observed, simulated):
@@ -83,17 +83,15 @@ def sampling(path_sam, data, num_samples):
     simulated, successful = simulating_data(
         path_sam, 30, 10, variable_dominance, variable_mean, variable_shape
     )
+    # Saving simulated sfs into the matrix
+    all_simulated_sfs = np.array([simulated])
+    posterior_distribution_dominance.append(variable_dominance)
+    posterior_distribution_mean.append(variable_mean)
+    posterior_distribution_shape.append(variable_shape)
+
+    # defining the very first threshold
     threshold = find_distance(data, simulated)
-    dt = pd.DataFrame(
-        [[variable_dominance, variable_mean, variable_shape, simulated, True]],
-        columns=[
-            "variable_dominance",
-            "variable_mean",
-            "variable_shape",
-            "log sfs",
-            "accepted",
-        ],
-    )
+
     # defining standard deviation and mean for sampling s+1 variable from s variable
     variable_dominance_st_dev = 0.1
     variable_mean_st_dev = 0.1
@@ -109,10 +107,9 @@ def sampling(path_sam, data, num_samples):
 
         # creating new variable for parameters
 
-        # new_variable_dominance = np.random.normal(
-        #    variable_dominance, variable_dominance, size=1
-        # )[0]
-        new_variable_dominance = 0.5
+        new_variable_dominance = np.random.normal(
+            variable_dominance, variable_dominance, size=1
+        )[0]
         new_variable_mean = np.random.normal(
             variable_mean, variable_mean_st_dev, size=1
         )[0]
@@ -133,6 +130,9 @@ def sampling(path_sam, data, num_samples):
             new_variable_mean,
             new_variable_shape,
         )
+        # saving data
+        all_simulated_sfs = np.vstack((all_simulated_sfs, simulated))
+
         print(i)
         print(
             "simulated once------------------------------------------------------------------"
@@ -141,26 +141,6 @@ def sampling(path_sam, data, num_samples):
 
         # accepting or rejecting new parameters
         if (distance <= threshold) & (successful == True):
-            # saving data
-            temp_dt = pd.DataFrame(
-                [
-                    [
-                        new_variable_dominance,
-                        new_variable_mean,
-                        new_variable_shape,
-                        simulated,
-                        True,
-                    ]
-                ],
-                columns=[
-                    "variable_dominance",
-                    "variable_mean",
-                    "variable_shape",
-                    "log sfs",
-                    "accepted",
-                ],
-            )
-            dt = dt.append(temp_dt, ignore_index=True)
             # when new variable is accepted
             posterior_distribution_mean.append(new_variable_mean)
             posterior_distribution_shape.append(new_variable_shape)
@@ -172,26 +152,6 @@ def sampling(path_sam, data, num_samples):
                 math.log(threshold) + (target_acceptance_rate - 1) / (i + 1)
             )
         else:
-            # saving data
-            temp_dt = pd.DataFrame(
-                [
-                    [
-                        new_variable_dominance,
-                        new_variable_mean,
-                        new_variable_shape,
-                        simulated,
-                        False,
-                    ]
-                ],
-                columns=[
-                    "variable_dominance",
-                    "variable_mean",
-                    "variable_shape",
-                    "log sfs",
-                    "accepted",
-                ],
-            )
-            dt = dt.append(temp_dt, ignore_index=True)
             # when variable is rejected
             posterior_distribution_mean.append(variable_mean)
             posterior_distribution_shape.append(variable_shape)
@@ -240,7 +200,7 @@ def sampling(path_sam, data, num_samples):
         posterior_distribution_dominance,
         posterior_distribution_mean,
         posterior_distribution_shape,
-        dt,
+        all_simulated_sfs,
     )
 
 
@@ -286,16 +246,22 @@ def main():
     )
     args = [arg for arg in sys.argv[1:] if not arg.startswith("-")]
     current_path = "/".join(arg for arg in args)
-    posterior_dominance, posterior_mean, posterior_shape, data_about_simulations = sampling(
-        current_path, given_sfs, 10000
+    posterior_dominance, posterior_mean, posterior_shape, simulated_sfs = sampling(
+        current_path, given_sfs, 200
     )
     count, bins, ignored = plt.hist(posterior_mean, 100, density=True)
     count, bins, ignored = plt.hist(posterior_shape, 100, density=True)
-    # count, bins, ignored = plt.hist(posterior_dominance, 100, density=True)
+    count, bins, ignored = plt.hist(posterior_dominance, 100, density=True)
     plt.title("Parameters frequency")
     plt.xlabel("value")
     plt.ylabel("frequency")
     plt.savefig("mcmc_parameters.png")
+
+    # saving data in matrix and turning into dataframe
+    simulated_sfs = np.column_stack((simulated_sfs, np.array(posterior_dominance)))
+    simulated_sfs = np.column_stack((simulated_sfs, np.array(posterior_mean)))
+    simulated_sfs = np.column_stack((simulated_sfs, np.array(posterior_shape)))
+    data_about_simulations = pd.DataFrame(simulated_sfs)
     pd.DataFrame(data_about_simulations).to_csv("All_used_data.csv")
 
 
