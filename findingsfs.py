@@ -108,7 +108,7 @@ def sampling(path_sam, data, num_samples):
         # creating new variable for parameters
 
         new_variable_dominance = np.random.normal(
-            variable_dominance, variable_dominance, size=1
+            variable_dominance, variable_dominance_st_dev, size=1
         )[0]
         new_variable_mean = np.random.normal(
             variable_mean, variable_mean_st_dev, size=1
@@ -130,8 +130,6 @@ def sampling(path_sam, data, num_samples):
             new_variable_mean,
             new_variable_shape,
         )
-        # saving data
-        all_simulated_sfs = np.vstack((all_simulated_sfs, simulated))
 
         print(i)
         print(
@@ -141,6 +139,8 @@ def sampling(path_sam, data, num_samples):
 
         # accepting or rejecting new parameters
         if (distance <= threshold) & (successful == True):
+            # saving data
+            all_simulated_sfs = np.vstack((all_simulated_sfs, simulated))
             # when new variable is accepted
             posterior_distribution_mean.append(new_variable_mean)
             posterior_distribution_shape.append(new_variable_shape)
@@ -152,6 +152,8 @@ def sampling(path_sam, data, num_samples):
                 math.log(threshold) + (target_acceptance_rate - 1) / (i + 1)
             )
         else:
+            # saving data
+            all_simulated_sfs = np.vstack((all_simulated_sfs, all_simulated_sfs[-1, :]))
             # when variable is rejected
             posterior_distribution_mean.append(variable_mean)
             posterior_distribution_shape.append(variable_shape)
@@ -247,7 +249,7 @@ def main():
     args = [arg for arg in sys.argv[1:] if not arg.startswith("-")]
     current_path = "/".join(arg for arg in args)
     posterior_dominance, posterior_mean, posterior_shape, simulated_sfs = sampling(
-        current_path, given_sfs, 200
+        current_path, given_sfs, 100
     )
     count, bins, ignored = plt.hist(posterior_mean, 100, density=True)
     count, bins, ignored = plt.hist(posterior_shape, 100, density=True)
