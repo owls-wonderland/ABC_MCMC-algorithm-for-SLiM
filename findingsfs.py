@@ -8,17 +8,15 @@ import sys
 import pandas as pd
 
 
-def simulating_data(
-    path, lenght_of_sfs, number_of_sfs, dominance_coefficient, mean, shape_parameter
-):
+def simulating_data(path, lenght_of_sfs, dominance_coefficient, mean, shape_parameter):
     """Function simulating_data runs Slim using terminal given number of times and generates .trees files.
     Extracts sfs from each .trees file. Later averages sfs and logs it."""
     samples = list(range(int(lenght_of_sfs)))
-    for i in range(number_of_sfs):
+    try:
         # creating different .trees output files
         os.system(
             "slim -d seed="
-            + str(i)
+            + str(1)
             + " -d dominance_coefficient="
             + str(dominance_coefficient)
             + " -d mean="
@@ -33,8 +31,8 @@ def simulating_data(
         )
 
         # extracting sfs from each .trees file
-        ts = pyslim.load(path + "/background" + str(i) + ".trees")
-        os.remove(path + "/background" + str(i) + ".trees")  # deleting used .trees file
+        ts = pyslim.load(path + "/background" + str(1) + ".trees")
+        os.remove(path + "/background" + str(1) + ".trees")  # deleting used .trees file
         ts = ts.simplify(samples)
         sfs = ts.allele_frequency_spectrum(
             mode="branch", span_normalise=False, polarised=True
@@ -44,18 +42,15 @@ def simulating_data(
         # Normalising SFS
         sumsfs = np.sum(sfs)
         sfs_norm = sfs / sumsfs
-        if i == 0:
-            all_sfs = sfs_norm
-        else:
-            all_sfs = all_sfs + sfs_norm
 
-    # average sfs
-    modified_sfs = np.delete(all_sfs, [0, len(all_sfs) - 1])
-    modified_sfs = modified_sfs / number_of_sfs
+        # deleting first and last values
+        modified_sfs = np.delete(sfs_norm, [0, len(sfs_norm) - 1])
 
-    # Log
-    log_sfs = np.log(modified_sfs) - np.log(1 - modified_sfs)
-    return log_sfs
+        # Log
+        log_sfs = np.log(modified_sfs) - np.log(1 - modified_sfs)
+        return log_sfs, True
+    except FileNotFoundError:
+        return np.zeros(lenght_of_sfs - 1), False
 
 
 def find_distance(observed, simulated):
@@ -75,8 +70,8 @@ def sampling(path_sam, data, num_samples):
     variable_shape = 0.1
 
     # setting the first threshold
-    simulated = simulating_data(
-        path_sam, 30, 3, variable_dominance, variable_mean, variable_shape
+    simulated, succesful = simulating_data(
+        path_sam, 30, variable_dominance, variable_mean, variable_shape
     )
     # Saving simulated sfs into the matrix
     all_simulated_sfs = np.array([simulated])
@@ -119,13 +114,8 @@ def sampling(path_sam, data, num_samples):
             new_variable_shape = -new_variable_shape
 
         # finding simulated data & distance
-        simulated = simulating_data(
-            path_sam,
-            30,
-            3,
-            new_variable_dominance,
-            new_variable_mean,
-            new_variable_shape,
+        simulated, succesful = simulating_data(
+            path_sam, 30, new_variable_dominance, new_variable_mean, new_variable_shape
         )
 
         print(i)
@@ -135,7 +125,7 @@ def sampling(path_sam, data, num_samples):
         distance = find_distance(data, simulated)
 
         # accepting or rejecting new parameters
-        if distance <= threshold:
+        if (distance <= threshold) & (succesful == True):
             # saving data
             all_simulated_sfs = np.vstack((all_simulated_sfs, simulated))
             all_calculated_distances = np.vstack((all_calculated_distances, distance))
