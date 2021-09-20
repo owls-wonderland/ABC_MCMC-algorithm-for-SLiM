@@ -6,17 +6,19 @@ import matplotlib.pyplot as plt
 import os
 import sys
 import pandas as pd
+import random as rd
 
 
 def simulating_data(path, lenght_of_sfs, dominance_coefficient, mean, shape_parameter):
     """Function simulating_data runs Slim using terminal given number of times and generates .trees files.
     Extracts sfs from each .trees file. Later averages sfs and logs it."""
     samples = list(range(int(lenght_of_sfs)))
+    random_seed_number = rd.randint(0, 100)
     try:
         # creating different .trees output files
         os.system(
             "slim -d seed="
-            + str(1)
+            + str(random_seed_number)
             + " -d dominance_coefficient="
             + str(dominance_coefficient)
             + " -d mean="
@@ -31,8 +33,10 @@ def simulating_data(path, lenght_of_sfs, dominance_coefficient, mean, shape_para
         )
 
         # extracting sfs from each .trees file
-        ts = pyslim.load(path + "/background" + str(1) + ".trees")
-        os.remove(path + "/background" + str(1) + ".trees")  # deleting used .trees file
+        ts = pyslim.load(path + "/background" + str(random_seed_number) + ".trees")
+        os.remove(
+            path + "/background" + str(random_seed_number) + ".trees"
+        )  # deleting used .trees file
         ts = ts.simplify(samples)
         sfs = ts.allele_frequency_spectrum(
             mode="branch", span_normalise=False, polarised=True
@@ -60,6 +64,9 @@ def find_distance(observed, simulated):
 
 
 def sampling(path_sam, data, num_samples):
+    # Finding length of sfs
+    length = np.size(data)
+
     posterior_distribution_dominance = []
     posterior_distribution_mean = []
     posterior_distribution_shape = []
@@ -70,9 +77,12 @@ def sampling(path_sam, data, num_samples):
     variable_shape = 0.1
 
     # setting the first threshold
-    simulated, succesful = simulating_data(
-        path_sam, 30, variable_dominance, variable_mean, variable_shape
-    )
+    simulated = np.empty(length)
+    simulated[:] = np.NaN
+    while np.all(np.isfinite(simulated)) == False:
+        simulated, succesful = simulating_data(
+            path_sam, length + 1, variable_dominance, variable_mean, variable_shape
+        )
     # Saving simulated sfs into the matrix
     all_simulated_sfs = np.array([simulated])
     posterior_distribution_dominance.append(variable_dominance)
@@ -115,7 +125,11 @@ def sampling(path_sam, data, num_samples):
 
         # finding simulated data & distance
         simulated, succesful = simulating_data(
-            path_sam, 30, new_variable_dominance, new_variable_mean, new_variable_shape
+            path_sam,
+            length + 1,
+            new_variable_dominance,
+            new_variable_mean,
+            new_variable_shape,
         )
 
         print(i)
@@ -201,41 +215,41 @@ def sampling(path_sam, data, num_samples):
 def main():
     given_sfs = np.array(
         [
-            -1.18783432
-            - 1.74609835
-            - 1.68097617
-            - 2.63070513
-            - 2.4895227
-            - 3.51028512
-            - 3.48102585
-            - 3.88919502
-            - 3.90956936
-            - 4.1422421
-            - 4.67984267
-            - 4.88248064
-            - 4.5274008
-            - 4.21196954
-            - 4.59830333
-            - 4.4236753
-            - 5.19989411
-            - 5.10046828
-            - 4.82342245
-            - 4.81271866
-            - 4.59234316
-            - 4.91520473
-            - 4.76823268
-            - 4.43999834
-            - 3.81415027
-            - 4.02637127
-            - 3.52964729
-            - 5.35993467
-            - 6.3311511
+            -1.18783432,
+            -1.74609835,
+            -1.68097617,
+            -2.63070513,
+            -2.4895227,
+            -3.51028512,
+            -3.48102585,
+            -3.88919502,
+            -3.90956936,
+            -4.1422421,
+            -4.67984267,
+            -4.88248064,
+            -4.5274008,
+            -4.21196954,
+            -4.59830333,
+            -4.4236753,
+            -5.19989411,
+            -5.10046828,
+            -4.82342245,
+            -4.81271866,
+            -4.59234316,
+            -4.91520473,
+            -4.76823268,
+            -4.43999834,
+            -3.81415027,
+            -4.02637127,
+            -3.52964729,
+            -5.35993467,
+            -6.3311511,
         ]
     )
     args = [arg for arg in sys.argv[1:] if not arg.startswith("-")]
     current_path = "/".join(arg for arg in args)
     posterior_dominance, posterior_mean, posterior_shape, simulated_sfs, calculated_distances = sampling(
-        current_path, given_sfs, 2000
+        current_path, given_sfs, 100
     )
     # sfs = simulating_data(current_path, 30, 2, 0.5, -0.01, 0.1)
     # making graphs
