@@ -75,10 +75,10 @@ Then all that have to be done is to run bash file:
 
 `./run_mcmc.sh`
 
-Bash file should take care of everything. It will create virtual environment and download all requared pachaged for python code to run.
-Bash file also gives directory's path such that all future files would be creted in the same directory.
+Bash file should take care of everything. It will create virtual environment and download all requared packages for python code to run.
+Bash file also gives directory's path such that all future files would be created in the same directory.
 
-Note thar after the first usage of bash file the virtual environment has been created and all requiared packaged has been installe. Therefore, to avoid repeated installation lines 2 & 6 can be commented out:
+Note that after the first usage of bash file the virtual environment has been created and all required packages has been installed. Therefore, to avoid repeated installation lines 2 & 6 can be commented out:
 
 '2 #pyenv virtualenv 3.8.2 mcmc-slim'
 
