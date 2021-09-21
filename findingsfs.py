@@ -13,7 +13,7 @@ def simulating_data(path, lenght_of_sfs, dominance_coefficient, mean, shape_para
     """Function simulating_data runs Slim using terminal given number of times and generates .trees files.
     Extracts sfs from each .trees file. Later averages sfs and logs it."""
     samples = list(range(int(lenght_of_sfs)))
-    random_seed_number = rd.randint(0, 100)
+    random_seed_number = rd.randint(0, 2 ^ 62 - 1)
     try:
         # creating different .trees output files
         os.system(
@@ -77,9 +77,10 @@ def sampling(path_sam, data, num_samples):
     variable_shape = 0.1
 
     # setting the first threshold
+    succesful = False
     simulated = np.empty(length)
     simulated[:] = np.NaN
-    while np.all(np.isfinite(simulated)) == False:
+    while (np.all(np.isfinite(simulated)) == False) or (succesful == False):
         simulated, succesful = simulating_data(
             path_sam, length + 1, variable_dominance, variable_mean, variable_shape
         )
@@ -124,18 +125,15 @@ def sampling(path_sam, data, num_samples):
             new_variable_shape = -new_variable_shape
 
         # finding simulated data & distance
-        simulated, succesful = simulating_data(
-            path_sam,
-            length + 1,
-            new_variable_dominance,
-            new_variable_mean,
-            new_variable_shape,
-        )
-
-        print(i)
-        print(
-            "simulated once------------------------------------------------------------------"
-        )
+        simulated[:] = np.NaN
+        while np.all(np.isfinite(simulated)) == False:
+            simulated, succesful = simulating_data(
+                path_sam,
+                length + 1,
+                new_variable_dominance,
+                new_variable_mean,
+                new_variable_shape,
+            )
         distance = find_distance(data, simulated)
 
         # accepting or rejecting new parameters
@@ -155,6 +153,7 @@ def sampling(path_sam, data, num_samples):
             )
         else:
             # saving data
+            print(succesful)
             all_simulated_sfs = np.vstack((all_simulated_sfs, all_simulated_sfs[-1, :]))
             all_calculated_distances = np.vstack(
                 (all_calculated_distances, all_calculated_distances[-1])
@@ -249,9 +248,8 @@ def main():
     args = [arg for arg in sys.argv[1:] if not arg.startswith("-")]
     current_path = "/".join(arg for arg in args)
     posterior_dominance, posterior_mean, posterior_shape, simulated_sfs, calculated_distances = sampling(
-        current_path, given_sfs, 100
+        current_path, given_sfs, 40000
     )
-    # sfs = simulating_data(current_path, 30, 2, 0.5, -0.01, 0.1)
     # making graphs
     count, bins, ignored = plt.hist(posterior_mean, 100, density=True, label="mean")
     count, bins, ignored = plt.hist(
