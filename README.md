@@ -4,15 +4,6 @@ This repository contains self-contain script created for my research project for
 
 #### Contents
 
-```
-├── ABC_MCMC-algorithm-for-SLiM
-│   ├── background.slim
-│   ├── findingsfs.py
-│   ├── requirements.txt
-|   ├── run_mcmc.sh
-│   └── README.md
-```
-
 - `background.slim` - scrip for Background selection model in SLiM. SLiM is an evo-
 lutionary simulation package that provides facilities for very easily and quickly con-
 structing genetically explicit individual-based evolutionary models.
