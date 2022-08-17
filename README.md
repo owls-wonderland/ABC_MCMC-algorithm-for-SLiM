@@ -1,12 +1,10 @@
 # About this repository
 
-This repository contains self-contain script created for my research project for the Undergraduate Research Support Scheme at the University of Warwick in the summer 2021. The presentation poster is available at [URSS Showcase 2021 website](https://urss.warwick.ac.uk/). Please familiarise yourself with the poster to find out about the project.
+This repository contains self-contain script created for my research project for the Undergraduate Research Support Scheme at the University of Warwick in the summer 2021. The presentation poster is available at URSS Showcase 2021 website. Please familiarise yourself with the poster to find out about the project.
 
 #### Contents
 
-- `background.slim` - scrip for Background selection model in SLiM. SLiM is an evo-
-lutionary simulation package that provides facilities for very easily and quickly con-
-structing genetically explicit individual-based evolutionary models.
+- `background.slim` - script for Background selection model in SLiM. SLiM is an evolutionary simulation package that provides facilities for very easily and quickly constructing genetically explicit individual-based evolutionary models.
 - `findingsfs.py` - python script that executed ABC-MCMC to find parameters for SLiM Background model.
 - `requirements.txt` - file contains libraries required for python script
 - `run_mcmc.sh` - bash script to run `findingsfs.py`
