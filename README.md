@@ -1,6 +1,6 @@
 # About this repository
 
-This repository contains self-contained script created for my research project for the Undergraduate Research Support Scheme at the University of Warwick in the summer 2021. The presentation poster is available at URSS Showcase 2021 website. Please familiarise yourself with the poster to find out about the project.
+This repository contains self-contained script created for my research project for the Undergraduate Research Support Scheme at the University of Warwick in the summer 2021. The presentation poster is available at [URSS Showcase 2021 website](https://urss.warwick.ac.uk/items/show/160). Please familiarise yourself with the poster to find out about the project.
 
 #### Contents
 
